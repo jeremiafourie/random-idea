@@ -1,10 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSystem } from '../Desktop'
 
-function CalculatorApp() {
-  const [display, setDisplay] = useState('0')
-  const [previousValue, setPreviousValue] = useState(null)
-  const [operation, setOperation] = useState(null)
-  const [waitingForOperand, setWaitingForOperand] = useState(false)
+function CalculatorApp({ windowId, instanceData, onUpdateInstance }) {
+  const { setClipboard, addNotification } = useSystem()
+  const [display, setDisplay] = useState(instanceData?.display || '0')
+  const [previousValue, setPreviousValue] = useState(instanceData?.previousValue || null)
+  const [operation, setOperation] = useState(instanceData?.operation || null)
+  const [waitingForOperand, setWaitingForOperand] = useState(instanceData?.waitingForOperand || false)
+
+  useEffect(() => {
+    onUpdateInstance({ display, previousValue, operation, waitingForOperand })
+  }, [display, previousValue, operation, waitingForOperand, onUpdateInstance])
 
   const inputNumber = (num) => {
     if (waitingForOperand) {
@@ -58,6 +64,8 @@ function CalculatorApp() {
       setPreviousValue(null)
       setOperation(null)
       setWaitingForOperand(true)
+      setClipboard(String(newValue))
+      addNotification(`Result ${newValue} copied to clipboard`, 'info')
     }
   }
 
@@ -133,6 +141,20 @@ function CalculatorApp() {
         border: '1px solid rgba(255, 255, 255, 0.1)'
       }}>
         {display}
+      </div>
+      
+      {/* Status bar */}
+      <div style={{
+        padding: '4px 8px',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        fontSize: '11px',
+        color: '#ccc',
+        background: 'rgba(255, 255, 255, 0.02)',
+        display: 'flex',
+        justifyContent: 'space-between'
+      }}>
+        <span>Calculator #{windowId}</span>
+        <span>Results auto-copy to clipboard</span>
       </div>
       
       <div style={{ 

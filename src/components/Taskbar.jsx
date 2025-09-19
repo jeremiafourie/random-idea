@@ -1,10 +1,11 @@
-import { Settings, FolderOpen, Calculator } from 'lucide-react'
+import { Settings, FolderOpen, Calculator, FileText } from 'lucide-react'
 
 function Taskbar({ windows, onWindowClick, onOpenApp }) {
   const apps = [
     { id: 'settings', icon: Settings, label: 'Settings' },
     { id: 'fileexplorer', icon: FolderOpen, label: 'File Explorer' },
-    { id: 'calculator', icon: Calculator, label: 'Calculator' }
+    { id: 'calculator', icon: Calculator, label: 'Calculator' },
+    { id: 'notepad', icon: FileText, label: 'Notepad' }
   ]
 
   return (

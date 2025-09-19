@@ -1,25 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FolderOpen, File, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useSystem } from '../Desktop'
 
-function FileExplorerApp() {
-  const [currentPath, setCurrentPath] = useState('C:\\Users\\Desktop')
-  const [history, setHistory] = useState(['C:\\Users\\Desktop'])
-  const [historyIndex, setHistoryIndex] = useState(0)
+function FileExplorerApp({ windowId, instanceData, onUpdateInstance }) {
+  const { systemState, openWindow, addNotification } = useSystem()
+  const [currentPath, setCurrentPath] = useState(instanceData?.currentPath || systemState.fileSystem.currentPath)
+  const [history, setHistory] = useState(instanceData?.history || [systemState.fileSystem.currentPath])
+  const [historyIndex, setHistoryIndex] = useState(instanceData?.historyIndex || 0)
 
-  const folders = [
-    { name: 'Documents', type: 'folder' },
-    { name: 'Pictures', type: 'folder' },
-    { name: 'Downloads', type: 'folder' },
-    { name: 'Music', type: 'folder' },
-    { name: 'Videos', type: 'folder' }
-  ]
+  const allFiles = systemState.fileSystem.files
+  const folders = allFiles.filter(f => f.type === 'folder')
+  const files = allFiles.filter(f => f.type === 'file')
 
-  const files = [
-    { name: 'readme.txt', type: 'file' },
-    { name: 'presentation.pptx', type: 'file' },
-    { name: 'report.docx', type: 'file' },
-    { name: 'photo.jpg', type: 'file' }
-  ]
+  useEffect(() => {
+    onUpdateInstance({ currentPath, history, historyIndex })
+  }, [currentPath, history, historyIndex, onUpdateInstance])
 
   const navigateToFolder = (folderName) => {
     const newPath = `${currentPath}\\${folderName}`
@@ -42,6 +37,18 @@ function FileExplorerApp() {
     if (historyIndex < history.length - 1) {
       setHistoryIndex(historyIndex + 1)
       setCurrentPath(history[historyIndex + 1])
+    }
+  }
+
+  const handleFileClick = (file) => {
+    if (file.type === 'file' && file.name.endsWith('.txt') && file.content !== undefined) {
+      openWindow('notepad', `Notepad - ${file.name}`, {
+        content: file.content,
+        fileName: file.name
+      })
+      addNotification(`Opened ${file.name} in Notepad`, 'info')
+    } else if (file.type === 'file') {
+      addNotification(`Cannot open ${file.name} - no associated program`, 'error')
     }
   }
 
@@ -131,6 +138,7 @@ function FileExplorerApp() {
           {files.map(file => (
             <div
               key={file.name}
+              onClick={() => handleFileClick(file)}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -143,10 +151,15 @@ function FileExplorerApp() {
               onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.1)'}
               onMouseLeave={(e) => e.target.style.background = 'transparent'}
             >
-              <File size={48} color="#87CEEB" />
+              <File size={48} color={file.name.endsWith('.txt') ? "#FFD700" : "#87CEEB"} />
               <span style={{ marginTop: '8px', fontSize: '12px', textAlign: 'center' }}>
                 {file.name}
               </span>
+              {file.content && (
+                <span style={{ fontSize: '10px', color: '#ccc', marginTop: '2px' }}>
+                  {file.content.length} chars
+                </span>
+              )}
             </div>
           ))}
         </div>

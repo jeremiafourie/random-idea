@@ -1,12 +1,7 @@
-import Desktop from './components/Desktop-simple'
+import Desktop from './components/Desktop'
 
 function App() {
-  try {
-    return <Desktop />
-  } catch (error) {
-    console.error('Error rendering Desktop:', error)
-    return <div style={{color: 'white', padding: '20px'}}>Error: {error.message}</div>
-  }
+  return <Desktop />
 }
 
 export default App

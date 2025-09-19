@@ -1,35 +1,31 @@
-import { useState } from 'react'
+import { useSystem } from '../Desktop'
 
-function SettingsApp() {
-  const [userDetails, setUserDetails] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    theme: 'dark',
-    notifications: true
-  })
+function SettingsApp({ windowId, instanceData, onUpdateInstance }) {
+  const { systemState, updateSystemState, addNotification } = useSystem()
+  const userProfile = systemState.userProfile
 
   const handleInputChange = (field, value) => {
-    setUserDetails(prev => ({
-      ...prev,
-      [field]: value
-    }))
+    updateSystemState(`userProfile.${field}`, value)
   }
 
   const handleSave = () => {
-    localStorage.setItem('userDetails', JSON.stringify(userDetails))
-    alert('Settings saved successfully!')
+    localStorage.setItem('userProfile', JSON.stringify(userProfile))
+    addNotification('Settings saved successfully!', 'success')
   }
 
   return (
     <div className="settings-form">
       <h2>User Settings</h2>
+      <p style={{ fontSize: '12px', color: '#ccc', marginBottom: '16px' }}>
+        Changes here affect the entire system
+      </p>
       
       <div className="form-group">
         <label htmlFor="name">Name</label>
         <input
           id="name"
           type="text"
-          value={userDetails.name}
+          value={userProfile.name}
           onChange={(e) => handleInputChange('name', e.target.value)}
         />
       </div>
@@ -39,7 +35,7 @@ function SettingsApp() {
         <input
           id="email"
           type="email"
-          value={userDetails.email}
+          value={userProfile.email}
           onChange={(e) => handleInputChange('email', e.target.value)}
         />
       </div>
@@ -48,7 +44,7 @@ function SettingsApp() {
         <label htmlFor="theme">Theme</label>
         <select
           id="theme"
-          value={userDetails.theme}
+          value={userProfile.theme}
           onChange={(e) => handleInputChange('theme', e.target.value)}
           style={{
             padding: '8px 12px',
@@ -68,7 +64,7 @@ function SettingsApp() {
         <label>
           <input
             type="checkbox"
-            checked={userDetails.notifications}
+            checked={userProfile.notifications}
             onChange={(e) => handleInputChange('notifications', e.target.checked)}
             style={{ marginRight: '8px' }}
           />
