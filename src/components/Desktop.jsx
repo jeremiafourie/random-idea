@@ -4,8 +4,8 @@ import Window from './Window'
 import DesktopIcons from './DesktopIcons'
 import SettingsApp from './apps/SettingsApp'
 import FileExplorerApp from './apps/FileExplorerApp'
-import CalculatorApp from './apps/CalculatorApp'
 import NotepadApp from './apps/NotepadApp'
+import NotificationPanel from './NotificationPanel'
 
 const SystemContext = createContext()
 
@@ -17,15 +17,17 @@ export const useSystem = () => {
   return context
 }
 
-function Desktop() {
+function Desktop({ user, onLogout }) {
   const [windows, setWindows] = useState([])
   const [nextZIndex, setNextZIndex] = useState(100)
+  const [showNotifications, setShowNotifications] = useState(false)
   const [systemState, setSystemState] = useState({
     userProfile: {
-      name: 'Windows User',
-      email: 'user@windows.com',
+      name: user?.username || 'Windows User',
+      email: user?.email || `${user?.username || 'user'}@windows.com`,
       theme: 'dark',
-      notifications: true
+      notifications: true,
+      loginTime: user?.loginTime
     },
     fileSystem: {
       currentPath: 'C:\\Users\\Desktop',
@@ -151,8 +153,6 @@ function Desktop() {
         return <SettingsApp {...props} />
       case 'fileexplorer':
         return <FileExplorerApp {...props} />
-      case 'calculator':
-        return <CalculatorApp {...props} />
       case 'notepad':
         return <NotepadApp {...props} />
       default:
@@ -166,7 +166,10 @@ function Desktop() {
     addNotification,
     openWindow,
     setClipboard: (text) => updateSystemState('clipboard', text),
-    getClipboard: () => systemState.clipboard
+    getClipboard: () => systemState.clipboard,
+    onLogout,
+    showNotifications,
+    setShowNotifications
   }
 
   return (
@@ -174,7 +177,7 @@ function Desktop() {
       <div className="desktop">
         <DesktopIcons onOpenApp={openWindow} />
         
-        {/* Notifications */}
+        {/* Toast Notifications - Show only recent ones as toasts */}
         <div style={{
           position: 'fixed',
           top: '20px',
@@ -184,7 +187,7 @@ function Desktop() {
           flexDirection: 'column',
           gap: '8px'
         }}>
-          {systemState.notifications.map(notification => (
+          {systemState.notifications.slice(-3).map(notification => (
             <div
               key={notification.id}
               style={{
@@ -197,7 +200,8 @@ function Desktop() {
                 fontSize: '14px',
                 maxWidth: '300px',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)'
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                animation: 'slideInFromTop 0.3s ease-out'
               }}
             >
               <div style={{ fontWeight: 'bold' }}>{notification.message}</div>
@@ -227,6 +231,12 @@ function Desktop() {
           windows={windows}
           onWindowClick={(id) => focusWindow(id)}
           onOpenApp={openWindow}
+        />
+
+        {/* Notification Panel - Outside desktop div so it covers entire screen */}
+        <NotificationPanel 
+          isOpen={showNotifications}
+          onClose={() => setShowNotifications(false)}
         />
       </div>
     </SystemContext.Provider>

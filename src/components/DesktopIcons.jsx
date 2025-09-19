@@ -1,10 +1,9 @@
-import { Settings, FolderOpen, Calculator, FileText } from 'lucide-react'
+import { Settings, FolderOpen, FileText } from 'lucide-react'
 
 function DesktopIcons({ onOpenApp }) {
   const icons = [
     { id: 'settings', icon: Settings, label: 'Settings' },
     { id: 'fileexplorer', icon: FolderOpen, label: 'File Explorer' },
-    { id: 'calculator', icon: Calculator, label: 'Calculator' },
     { id: 'notepad', icon: FileText, label: 'Notepad' }
   ]
 
